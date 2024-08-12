@@ -1,6 +1,8 @@
 ---
 title: "Toolik Station Air Temperature"
 format: html
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
@@ -63,8 +65,10 @@ names(toolik_weather)
 Let's make a jitterplot of temperatures by month.
 
 ```{r}
-toolik_temp_plot <- ggplot(data = toolik_weather, aes(x = as.factor(month), y = daily_air_temp_mean_c)) +
-  geom_jitter(aes(color = daily_air_temp_mean_c), show.legend = FALSE) +
+toolik_temp_plot <- ggplot(data = toolik_weather, aes(x = as.factor(month),
+                                                      y = daily_air_temp_mean_c)) +
+  geom_jitter(aes(color = daily_air_temp_mean_c), 
+              show.legend = FALSE) +
   scale_color_gradient(low = "blue", high = "orange") +
   theme_minimal() +
   labs(title = "Toolik Station daily air temperature",
@@ -83,3 +87,58 @@ ggsave(here::here("figs", "toolik_temp_plot.png"), height = 6, width = 7)
 Now try changing something about the ggplot code, and re-run your `ggsave()` line above. Does your saved figure change? Great!
 
 ## End Example 1
+
+## Example 2
+
+## Read in Chlorophyll Data 
+
+```{r}
+toolik_chlorophyll <- read_csv(here::here("data", "data-raw", "toolik_chlorophyll.csv"))
+```
+
+## Skim Chlorophyll Data
+
+```{r}
+skimr::skim(toolik_chlorophyll)
+```
+
+## Clean Chlorophyll Data
+
+```{r}
+toolik_chlorophyll <- toolik_chlorophyll %>% 
+  clean_names() 
+```
+
+```{r}
+dim(toolik_chlorophyll)
+names(toolik_chlorophyll)
+```
+
+## Turn . in data into N/A so R can read it properly using `na_if` function 
+
+```{r}
+# By renaming this column (as itself) it outputs it in the data fram and not just the console
+# If we didn't do toolik_chlorophyll$active_chl_a_ug_1 <- then it would only output into console
+toolik_chlorophyll$active_chl_a_ug_l <- 
+na_if(toolik_chlorophyll$active_chl_a_ug_l, ".")
+
+# Need to change this variable from a Character to Numeric in order to properly graph it
+toolik_chlorophyll$active_chl_a_ug_l <- 
+  as.numeric(toolik_chlorophyll$active_chl_a_ug_l)
+
+
+```
+
+```{r}
+ggplot(data = toolik_chlorophyll, 
+       aes(x = depth,
+           y = active_chl_a_ug_l)) +
+         geom_point(aes(col = active_chl_a_ug_l),
+                    show.legend = FALSE) +
+  scale_color_gradient(low = "blue", high = "orange") +
+  theme_minimal() +
+    labs(title = "Toolik Chlorophyll Concentration", 
+         x = "Lake Depth (meters)",
+         y = "Active Chlorophyll Concetration (micrograms per liter)")
+```
+
